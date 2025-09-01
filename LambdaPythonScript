@@ -1,0 +1,56 @@
+import boto3
+import csv
+import io
+from datetime import datetime
+
+dynamodb = boto3.resource('dynamodb')
+s3 = boto3.client('s3')
+
+TABLE_NAME = 'RaspiSensorData'
+BUCKET_NAME = 'raspi-sensor-data-export'
+FILENAME = 'raspi_data_export.csv'
+
+def lambda_handler(event, context):
+    table = dynamodb.Table(TABLE_NAME)
+    response = table.scan()
+    items = response['Items']
+
+    # Create CSV in memory
+    csv_buffer = io.StringIO()
+    csv_writer = csv.writer(csv_buffer)
+
+    # Write headers
+    headers = ['timestamp', 'temperature', 'humidity']
+    csv_writer.writerow(headers)
+
+    for item in items:
+        # Handle possible nested structure under "payload"
+        if 'payload' in item:
+            payload = item['payload']
+        else:
+            payload = item
+
+        # Extract and parse values
+        raw_ts = payload.get('timestamp') or item.get('timestamp')
+        try:
+            iso_timestamp = datetime.utcfromtimestamp(int(raw_ts)).isoformat()
+        except:
+            iso_timestamp = raw_ts  # Fallback to raw value if already formatted
+
+        temperature = payload.get('temperature') or item.get('temperature')
+        humidity = payload.get('humidity') or item.get('humidity')
+
+        # Write row
+        csv_writer.writerow([iso_timestamp, temperature, humidity])
+
+    # Upload to S3
+    s3.put_object(
+        Bucket=BUCKET_NAME,
+        Key=FILENAME,
+        Body=csv_buffer.getvalue()
+    )
+
+    return {
+        'statusCode': 200,
+        'body': f'Exported {len(items)} items to {FILENAME} in bucket {BUCKET_NAME}'
+    }
