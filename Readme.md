@@ -1,20 +1,20 @@
 # 📡 IoT-Based Temperature and Humidity Monitoring with Raspberry Pi and AWS
 
-This project demonstrates a complete IoT pipeline using a Raspberry Pi and a DHT22 sensor to monitor temperature and humidity data, publish it to AWS IoT Core, store it in DynamoDB, export to S3 using a Lambda function, and visualize it in Amazon QuickSight.
+This project demonstrates a **complete end-to-end IoT data pipeline** using a Raspberry Pi and a DHT22 sensor. The system reads real-time temperature and humidity data, publishes it to **AWS IoT Core**, stores it in **DynamoDB**, and then uses **AWS Lambda** to export that data to **S3** on a schedule. The data is finally visualized using **Amazon QuickSight**.
 
 ---
 
 ## 🧠 Project Overview
 
-- 🌡️ **Sensor**: DHT22 (Temperature & Humidity)
-- 🖥️ **Device**: Raspberry Pi
-- ☁️ **Cloud Platform**: AWS
-- 🔁 **Data Flow**:
-  1. Raspberry Pi reads sensor data.
-  2. Publishes to AWS IoT Core using MQTT.
-  3. IoT Rule writes data into **DynamoDB**.
-  4. **AWS Lambda** (triggered by **EventBridge**) exports data to **S3** every hour.
-  5. Data is visualized in **Amazon QuickSight**.
+- 🌡️ **Sensor**: DHT22 (for monitoring temperature and humidity)
+- 🖥️ **Device**: Raspberry Pi (Python environment)
+- ☁️ **Cloud Platform**: Amazon Web Services (AWS)
+- 🔁 **Data Flow Pipeline**:
+  1. Raspberry Pi reads sensor data using a Python script.
+  2. Data is published to **AWS IoT Core** via MQTT.
+  3. An **IoT Rule** sends the payload to **DynamoDB**.
+  4. **AWS Lambda** function, triggered by **Amazon EventBridge** every hour, exports data from DynamoDB to **Amazon S3**.
+  5. **Amazon QuickSight** is used to visualize sensor trends over time.
 
 ---
 
@@ -25,24 +25,25 @@ This project demonstrates a complete IoT pipeline using a Raspberry Pi and a DHT
 | Sensor          | DHT22                             |
 | Microcontroller | Raspberry Pi                      |
 | Messaging       | AWS IoT Core (MQTT)               |
-| Storage         | DynamoDB                          |
+| Database        | DynamoDB                          |
 | Serverless      | AWS Lambda                        |
 | Scheduler       | Amazon EventBridge                |
 | File Storage    | Amazon S3                         |
 | Visualization   | Amazon QuickSight                 |
-| Language        | Python                            |
+| Programming     | Python                            |
 
 ---
 
----
+## 🔍 Architecture Diagram
 
-
+```text
 Raspberry Pi
    ↓ MQTT
 AWS IoT Core (raspi/temp topic)
-   ↓ Rule
+   ↓ IoT Rule
 DynamoDB (RaspiSensorData)
-   ↓ Lambda (every hour)
+   ↓ Lambda (every hour via EventBridge)
 S3 Bucket (raspi_data_export.csv)
    ↓
-QuickSight Dashboard
+Amazon QuickSight Dashboard
+ ```
